@@ -19,7 +19,8 @@ const useStyles = makeStyles({
   },
 });
 
-export const BasicTable = ({rows,flag})=> {
+//A basic component that renders laps in a tabular format.
+export const LapsTable = ({rows,flag})=> {
   const classes = useStyles();
 
   return (
@@ -38,4 +39,4 @@ export const BasicTable = ({rows,flag})=> {
     </TableContainer>
   );
 }
-export default BasicTable;
+export default LapsTable;
