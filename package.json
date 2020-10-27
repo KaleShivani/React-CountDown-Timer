@@ -7,11 +7,13 @@
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
+    "enzyme-adapter-react-16": "^1.15.5",
     "final-form": "^4.20.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-final-form": "^6.5.2",
-    "react-scripts": "3.4.4"
+    "react-scripts": "3.4.4",
+    "sinon": "^9.2.0"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -33,5 +35,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "enzyme": "^3.11.0",
+    "enzyme-adapter-react-16": "^1.15.5",
+    "react-test-renderer": "^17.0.1"
   }
 }

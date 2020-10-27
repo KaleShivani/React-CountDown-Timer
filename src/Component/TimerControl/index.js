@@ -188,6 +188,7 @@ const TimerControl = () => {
               onClick={(e) => handleStart(e)}
               className={classes.btn}
               color="primary"
+              id="primary"
             >
               Start
             </Button>
@@ -195,6 +196,7 @@ const TimerControl = () => {
               variant="contained"
               onClick={handleStop}
               color="secondary"
+              id="secondary"
               className={classes.btn}
             >
               Stop
@@ -202,6 +204,7 @@ const TimerControl = () => {
             <Button
               variant="contained"
               onClick={handleClear}
+              id="reset"
               className={classes.btn}
             >
               Reset
