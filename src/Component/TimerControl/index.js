@@ -19,8 +19,18 @@ const useStyles = makeStyles({
   start: {
     fontSize: "22px",
   },
+  stop:{
+    fontSize: "22px",
+    paddingLeft: "15px",
+  },
+  duration:{
+    fontSize: "22px",
+    paddingLeft: "15px",
+  },
   grid: {
     float: "left",
+    display: "flex",
+    paddingTop: '2%',
   },
 });
 const TimerControl = () => {
@@ -30,11 +40,22 @@ const TimerControl = () => {
   const [secValues, setSecValues] = useState(["00"]);
   const [stoptime, setStopTime] = useState(["00:00:00"]);
   const [starttime, setStartTime] = useState(["00:00:00"]);
+  const [totalStartTime, setTotalStartTime] = useState();
+  const [totalDuration, setTotalDuration] = useState(["00:00:00"]);
   const [flag, setFlag] = useState(false);
+  const [disableStart, setDisabledStart] = useState(false);
+  const [disableStop, setDisabledStop] = useState(false);
+  const [disableReset, setDisabledReset] = useState(false);
   const [laps, setLaps] = useState(false);
   const [lapsArr, setLapsArr] = useState([]);
   const [arr, setArr] = useState([]);
 
+  const duration =
+    parseInt(hourValue) * 60 * 60 +
+    parseInt(minValues) * 60 +
+    parseInt(secValues);
+ 
+ 
  //Look for the keypress functionality for user to capture laps.
  //set laps on the basis of keypress and set it in an array, the array will further be set in laps component.
   document.body.onkeyup = function (e) {
@@ -46,6 +67,26 @@ const TimerControl = () => {
     }
   };
 
+  document.body.onclick = function (e) {
+    setTotalStartTime(duration);
+    if (e.target.innerText === "START") {
+      formatTime();
+    }
+    e.preventDefault();
+  };
+
+  const handleDisabled = () => {
+    let hours = localStorage.getItem("hours");
+    let minutes = localStorage.getItem("minutes");
+    let seconds = localStorage.getItem("seconds");
+    if (hours !== null || minutes !== null || seconds !== null) {
+      setDisabledStart(true);
+    } else {
+      setDisabledStart(false);
+      setDisabledStop(true);
+      setDisabledReset(true);
+    }
+  };
   //Set the hour typed by the user
   const handleHourChange = (e) => {
     setHourValue(e.target.value);
@@ -61,15 +102,12 @@ const TimerControl = () => {
     setSecValues(e.target.value);
   };
 
-
   //Handles start time of the countdown timer.
   //Converts the total time added by the user in seconds and converts it into hours, minutes and seconds
-  const handleStart = (e) => {
-    formatTime(false);
-    var duration =
-      parseInt(hourValue) * 60 * 60 +
-      parseInt(minValues) * 60 +
-      parseInt(secValues);
+  const handleStart = () => {
+    setDisabledStart(true);
+    setDisabledStop(false);
+    setDisabledReset(false);
     Clock(duration);
   };
   const Clock = (duration) => {
@@ -102,20 +140,21 @@ const TimerControl = () => {
     }, 1000);
   };
 
-  const formatTime = (stopFlag, totalCouunterDuration) => {
-    var duration =
-      parseInt(hourValue) * 60 * 60 +
-      parseInt(minValues) * 60 +
-      parseInt(secValues);
+  const formatTime = (totalD) => {
+    let time = totalD !== undefined ? totalD : duration;
     let minutes;
     let seconds;
-    let hours = Math.floor(duration / 3600);
-    minutes = Math.floor((duration / 60) % 60);
-    seconds = parseInt(duration % 60);
+    let hours = Math.floor(time / 3600);
+    minutes = Math.floor((time / 60) % 60);
+    seconds = parseInt(time % 60);
     minutes = minutes.toString().length === 1 ? "0" + minutes : minutes;
     seconds = seconds.toString().length === 1 ? "0" + seconds : seconds;
-    arr.push(hours + ":" + minutes + ":" + seconds);
-    setArr(arr);
+    if (totalD !== undefined) {
+      setTotalDuration(hours + ":" + minutes + ":" + seconds);
+    } else {
+      arr.push(hours + ":" + minutes + ":" + seconds);
+      setArr(arr);
+    }
   };
 
   //Stops the timer captures the start time, stopped time and duration
@@ -123,8 +162,11 @@ const TimerControl = () => {
     let time = flag
       ? "-" + hourValue + ":" + minValues + ":" + secValues
       : hourValue + ":" + minValues + ":" + secValues;
+    let totalDuration = totalStartTime <= 0 ? (totalStartTime - duration) * -1 :totalStartTime - duration;
+    formatTime(totalDuration);
     setStartTime(arr);
     setStopTime(time);
+    setDisabledStart(false);
     clearInterval(DURATION);
   };
 
@@ -136,13 +178,16 @@ const TimerControl = () => {
     setMinValues("00");
     setSecValues("00");
     setFlag(false);
+    setDisabledStart(false);
+    setDisabledStop(false);
     setArr([]);
     setStopTime("00:00:00");
     setStartTime("00:00:00");
+    setTotalDuration("00:00:00");
     clearInterval(DURATION);
   };
-  useState(() => {
-    //Captures the value on the which the user has reloaded the browser and starts the countdown from the last checkpoint.
+
+  const LastCheckpoint = ()=>{
     let hours = localStorage.getItem("hours");
     let minutes = localStorage.getItem("minutes");
     let seconds = localStorage.getItem("seconds");
@@ -152,12 +197,16 @@ const TimerControl = () => {
     if (hours !== null && minutes !== null && seconds !== null) {
       arr.push(hours + ":" + minutes + ":" + seconds);
       setArr(arr);
-      var duration =
-        parseInt(localStorage.getItem("hours")) * 60 * 60 +
-        parseInt(localStorage.getItem("minutes")) * 60 +
-        parseInt(localStorage.getItem("seconds"));
-      Clock(duration);
+      let durationLastCheckPnt =
+        parseInt(hours) * 60 * 60 + parseInt(minutes) * 60 + parseInt(seconds);
+        setTotalStartTime(durationLastCheckPnt);
+      Clock(durationLastCheckPnt);
     }
+  };
+  useState(() => {
+    //Captures the value on the which the user has reloaded the browser and starts the countdown from the last checkpoint.
+    LastCheckpoint();
+    handleDisabled();
   });
   return (
     <div className="App">
@@ -194,6 +243,7 @@ const TimerControl = () => {
             <Button
               variant="contained"
               onClick={(e) => handleStart(e)}
+              disabled = {disableStart}
               className={classes.btn}
               color="primary"
               id="primary"
@@ -203,6 +253,7 @@ const TimerControl = () => {
             <Button
               variant="contained"
               onClick={handleStop}
+              disabled = {disableStop}
               color="secondary"
               id="secondary"
               className={classes.btn}
@@ -212,6 +263,7 @@ const TimerControl = () => {
             <Button
               variant="contained"
               onClick={handleClear}
+              disabled = {disableReset}
               id="reset"
               className={classes.btn}
             >
@@ -219,8 +271,9 @@ const TimerControl = () => {
             </Button>
           </Grid>
           <Grid className={classes.grid}>
-            <div className={classes.start}>Start Time: {starttime} </div>
-            <div className={classes.start}>Stop Time: {stoptime}</div>
+            <div className={classes.start}>Start Time: {starttime}</div>
+            <div className={classes.stop}>Stop Time: {stoptime}</div>
+            <div className={classes.duration}>Duration: {totalDuration} </div>
           </Grid>
           <div>{laps.length > 0 && <LapsTable rows={laps} flag={flag} />}</div>
         </div>
